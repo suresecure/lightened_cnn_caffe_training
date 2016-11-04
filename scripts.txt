@@ -1,0 +1,26 @@
+按文件夹组织caffe txt文件
+num=0; folder=casia_clean_align_lightened_cnn_origin; for i in `ls ${folder}`; do for j in `ls ${folder}/$i`; do echo $PWD'/${folder}/'$i'/'$j' '${num} >> ${folder}'.txt'; done; ((num++)); done
+
+IDSample
+由id找到对应normal image
+for a in `cat id_train.txt`; do for b in `cat normal.txt`; do if [ "${a:0:18}"x = "${b:0:18}"x ]; then echo $b; fi; done; done >> normal_train.txt
+按person分配到对应文件夹
+for a in `cat id_train.txt`; do echo $a; mkdir -p align_for_train/${a:0:18}; mv align_for_train/id/$a align_for_train/${a:0:18}; done; 
+for a in `cat normal_train.txt`; do echo $a; mv align_for_train/normal/$a align_for_train/${a:0:18}; done
+分配class number
+num=10575; for a in `ls align_for_train/train`; do for b in `ls align_for_train/train/$a`; do echo $PWD'/align_for_train/train/'$a'/'$b' '${num} >> train_idsample.txt; done; ((num++));done
+
+caffe训练
+./build/tools/caffe train -solver models/lightened_cnn/20161021/solver.prototxt -gpu 0 2>data_face/lightened_cnn_train_20161021/20161021_lightened_cnn_origin.log
+caffe resume训练
+./build/tools/caffe train -solver models/lightened_cnn/20161021/solver.prototxt -snapshot models/lightened_cnn/20161021/20161021_1/lightened_cnn_20161021_iter_423360.solverstate -gpu 0 2>data_face/lightened_cnn_train_20161021/20161021_2_lightened_cnn_origin.log
+caffe fine-tuning训练
+./build/tools/caffe train -solver models/lightened_cnn/20161102/solver.prototxt -weights models/lightened_cnn/20161021/lightened_cnn_20161021_iter_1500000.caffemodel -gpu 0 2>data_face/lightened_cnn_train_20161021/20161102_lightened_cnn_fine_tune_20161121_2_1500000.log
+caffe测试
+./build/tools/caffe test -model models/lightened_cnn/20161021/test.prototxt -weights models/lightened_cnn/20161021/lightened_cnn_20161021_iter_563904.caffemodel -gpu 0 2>data_face/lightened_cnn_train_20161021/20161021_lightened_cnn_563904_result.log
+生成lmdb
+./build/tools/convert_imageset --shuffle --gray=True / ~/myCoding/dataset/lightened_cnn_train_20161021/test.txt ~/myCoding/dataset/lightened_cnn_train_20161021/test_lmdb_gray; 
+./build/tools/convert_imageset --shuffle --gray=True / ~/myCoding/dataset/lightened_cnn_train_20161021/train.txt ~/myCoding/dataset/lightened_cnn_train_20161021/train_lmdb_gray
+
+
+

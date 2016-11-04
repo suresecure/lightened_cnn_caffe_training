@@ -1,0 +1,14 @@
+net: "models/lightened_cnn/20161021/train_val.prototxt"
+test_iter: 320
+test_interval: 6048
+base_lr: 0.001
+lr_policy: "step"
+gamma: 0.8
+stepsize: 30240
+display: 500
+max_iter: 1500000
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 60480
+snapshot_prefix: "models/lightened_cnn/20161021/lightened_cnn_20161021"
+solver_mode: GPU
